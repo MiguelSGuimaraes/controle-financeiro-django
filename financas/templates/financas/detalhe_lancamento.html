@@ -1,0 +1,20 @@
+{% extends 'financas/base.html' %}
+
+{% block conteudo %}
+<h2>{{ lancamento.descricao }}</h2>
+
+<div class="detalhes">
+    <p><strong>Categoria:</strong> {{ lancamento.get_categoria_display }}</p>
+    <p><strong>Tipo:</strong> {{ lancamento.get_tipo_display }}</p>
+    <p><strong>Forma de pagamento:</strong> {{ lancamento.get_forma_pagamento_display }}</p>
+    <p><strong>Valor:</strong> R$ {{ lancamento.valor }}</p>
+    <p><strong>Data:</strong> {{ lancamento.data_lancamento }}</p>
+    <p><strong>Recorrente:</strong> {% if lancamento.recorrente %}Sim{% else %}Não{% endif %}</p>
+    <p><strong>Observações:</strong> {{ lancamento.observacoes|default:"—" }}</p>
+</div>
+
+<div class="acoes-form">
+    <a href="{% url 'editar_lancamento' lancamento.pk %}" class="btn btn-primary">Editar</a>
+    <a href="{% url 'lista_lancamentos' %}" class="btn btn-secondary">Voltar</a>
+</div>
+{% endblock %}

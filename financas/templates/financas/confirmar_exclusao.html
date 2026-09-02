@@ -1,0 +1,12 @@
+{% extends 'financas/base.html' %}
+
+{% block conteudo %}
+<h2>Confirmar exclusão</h2>
+<p>Tem certeza que deseja excluir o lançamento <strong>"{{ lancamento.descricao }}"</strong>?</p>
+
+<form method="post" class="acoes-form">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-destructive">Sim, excluir</button>
+  <a href="{% url 'lista_lancamentos' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

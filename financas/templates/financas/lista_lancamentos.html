@@ -1,0 +1,41 @@
+{% extends 'financas/base.html' %}
+
+{% block conteudo %}
+<div class="page-header">
+    <h2>Meus Lançamentos</h2>
+    <a href="{% url 'criar_lancamento' %}" class="btn btn-primary">+ Novo Lançamento</a>
+</div>
+
+<table class="tabela">
+  <tr>
+    <th>Descrição</th>
+    <th>Categoria</th>
+    <th>Tipo</th>
+    <th>Valor</th>
+    <th>Data</th>
+    <th>Ações</th>
+  </tr>
+  {% for lancamento in lancamentos %}
+  <tr>
+    <td>{{ lancamento.descricao }}</td>
+    <td>{{ lancamento.get_categoria_display }}</td>
+    <td>
+      <span class="badge {% if lancamento.tipo == 'R' %}badge-receita{% else %}badge-despesa{% endif %}">
+        {{ lancamento.get_tipo_display }}
+      </span>
+    </td>
+    <td>R$ {{ lancamento.valor }}</td>
+    <td>{{ lancamento.data_lancamento }}</td>
+    <td class="acoes">
+      <a href="{% url 'detalhe_lancamento' lancamento.pk %}">Ver</a>
+      <a href="{% url 'editar_lancamento' lancamento.pk %}">Editar</a>
+      <a href="{% url 'excluir_lancamento' lancamento.pk %}" class="link-excluir">Excluir</a>
+    </td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="6" class="vazio">Nenhum lançamento cadastrado ainda.</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

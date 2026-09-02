@@ -1,0 +1,14 @@
+{% extends 'financas/base.html' %}
+
+{% block conteudo %}
+<h2>{% if form.instance.pk %}Editar{% else %}Novo{% endif %} Lançamento</h2>
+
+<form method="post" class="form">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <div class="acoes-form">
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a href="{% url 'lista_lancamentos' %}" class="btn btn-secondary">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
