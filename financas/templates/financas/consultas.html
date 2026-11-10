@@ -4,7 +4,6 @@
 {% block conteudo %}
 
 <style>
-    /* Formulário de filtros */
     .filtros-form {
         background: #1C2340;
         border: 1px solid #303858;
@@ -61,7 +60,6 @@
         white-space: nowrap;
     }
 
-    /* Indicadores */
     .dashboard-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -110,7 +108,6 @@
         color: #A5B4FC;
     }
 
-    /* Resultado */
     .dashboard-section {
         margin-bottom: 32px;
     }
@@ -120,13 +117,13 @@
         margin-bottom: 18px;
     }
 
-    /* Tabela */
     .tabela {
         background: #1C2340;
         color: #F1F2FA;
         border: 1px solid #303858;
         border-radius: 12px;
         overflow: hidden;
+        width: 100%;
     }
 
     .tabela th {
@@ -149,7 +146,6 @@
         padding: 24px;
     }
 
-    /* Responsividade */
     @media (max-width: 900px) {
         .dashboard-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -188,6 +184,22 @@
 <form method="get" class="form filtros-form">
 
     <div>
+        <label for="conta">Conta</label>
+        <select name="conta" id="conta">
+            <option value="">Todas as contas</option>
+
+            {% for conta in contas %}
+                <option
+                    value="{{ conta.pk }}"
+                    {% if conta_selecionada == conta.pk|stringformat:"s" %}selected{% endif %}
+                >
+                    {{ conta.nome }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
         <label for="data_inicio">Data inicial</label>
         <input
             type="date"
@@ -220,8 +232,12 @@
         <label for="categoria">Categoria</label>
         <select name="categoria" id="categoria">
             <option value="">Todas</option>
+
             {% for codigo, nome in categorias %}
-                <option value="{{ codigo }}" {% if categoria_selecionada == codigo %}selected{% endif %}>
+                <option
+                    value="{{ codigo }}"
+                    {% if categoria_selecionada == codigo %}selected{% endif %}
+                >
                     {{ nome }}
                 </option>
             {% endfor %}
@@ -276,30 +292,36 @@
     <h2>Resultado da Consulta</h2>
 
     <table class="tabela">
-        <tr>
-            <th>Descrição</th>
-            <th>Categoria</th>
-            <th>Tipo</th>
-            <th>Valor</th>
-            <th>Data</th>
-        </tr>
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Conta</th>
+                <th>Categoria</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+                <th>Data</th>
+            </tr>
+        </thead>
 
-        {% for lancamento in lancamentos %}
-        <tr>
-            <td>{{ lancamento.descricao }}</td>
-            <td>{{ lancamento.get_categoria_display }}</td>
-            <td>{{ lancamento.get_tipo_display }}</td>
-            <td>R$ {{ lancamento.valor|floatformat:2 }}</td>
-            <td>{{ lancamento.data_lancamento|date:"d/m/Y" }}</td>
-        </tr>
+        <tbody>
+            {% for lancamento in lancamentos %}
+            <tr>
+                <td>{{ lancamento.descricao }}</td>
+                <td>{{ lancamento.conta.nome }}</td>
+                <td>{{ lancamento.get_categoria_display }}</td>
+                <td>{{ lancamento.get_tipo_display }}</td>
+                <td>R$ {{ lancamento.valor|floatformat:2 }}</td>
+                <td>{{ lancamento.data_lancamento|date:"d/m/Y" }}</td>
+            </tr>
 
-        {% empty %}
-        <tr>
-            <td colspan="5" class="vazio">
-                Nenhum lançamento encontrado com esses filtros.
-            </td>
-        </tr>
-        {% endfor %}
+            {% empty %}
+            <tr>
+                <td colspan="6" class="vazio">
+                    Nenhum lançamento encontrado com esses filtros.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </div>
 

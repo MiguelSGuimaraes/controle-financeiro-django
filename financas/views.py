@@ -1,6 +1,8 @@
 
 import csv
 
+from decimal import Decimal
+
 from django.utils.dateparse import parse_date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -10,7 +12,6 @@ from django.db.models.functions import TruncMonth
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 from django.http import HttpResponse
-from decimal import Decimal
 
 from .models import Lancamento, Conta, Categoria
 from .forms import LancamentoForm, ContaForm, CategoriaForm
@@ -313,16 +314,37 @@ def excluir_categoria(request, pk):
     )
 
 
+
 @login_required
 def dashboard(request):
     contas = Conta.objects.filter(
         usuario=request.user,
         grupo__isnull=True
+    ).order_by('nome')
+
+    conta_id = request.GET.get('conta', '')
+    conta_selecionada = ''
+
+    if conta_id:
+        try:
+            conta_id_int = int(conta_id)
+            conta_valida = contas.filter(pk=conta_id_int).first()
+        except (TypeError, ValueError):
+            conta_valida = None
+
+        if conta_valida:
+            contas_filtradas = contas.filter(pk=conta_valida.pk)
+            conta_selecionada = str(conta_valida.pk)
+        else:
+            contas_filtradas = contas.none()
+    else:
+        contas_filtradas = contas
+
+    lancamentos = Lancamento.objects.filter(
+        conta__in=contas_filtradas
     )
 
-    lancamentos = Lancamento.objects.filter(conta__in=contas)
-
-    saldo_inicial = contas.aggregate(
+    saldo_inicial = contas_filtradas.aggregate(
         total=Sum('saldo_inicial')
     )['total'] or Decimal('0.00')
 
@@ -350,10 +372,11 @@ def dashboard(request):
 
     receitas_mes = totais_mes['receitas'] or Decimal('0.00')
     despesas_mes = totais_mes['despesas'] or Decimal('0.00')
-
     resultado_mes = receitas_mes - despesas_mes
 
-    ultimos_lancamentos = lancamentos.order_by(
+    ultimos_lancamentos = lancamentos.select_related(
+        'conta'
+    ).order_by(
         '-data_lancamento', '-id'
     )[:5]
 
@@ -423,6 +446,8 @@ def dashboard(request):
         grafico_despesas.append(float(valores['despesas']))
 
     contexto = {
+        'contas': contas,
+        'conta_selecionada': conta_selecionada,
         'saldo_total': saldo_total,
         'receitas_mes': receitas_mes,
         'despesas_mes': despesas_mes,
@@ -440,11 +465,15 @@ def dashboard(request):
     )
 
 
-@login_required
-def consultas(request):
+
+def _obter_lancamentos_filtrados(request):
+    contas = Conta.objects.filter(
+        usuario=request.user,
+        grupo__isnull=True
+    ).order_by('nome')
+
     lancamentos = Lancamento.objects.filter(
-        conta__usuario=request.user,
-        conta__grupo__isnull=True
+        conta__in=contas
     )
 
     data_inicio = parse_date(request.GET.get('data_inicio', ''))
@@ -452,6 +481,7 @@ def consultas(request):
 
     tipo = request.GET.get('tipo', '')
     categoria = request.GET.get('categoria', '')
+    conta_id = request.GET.get('conta', '')
 
     if data_inicio:
         lancamentos = lancamentos.filter(
@@ -473,6 +503,33 @@ def consultas(request):
     if categoria in categorias_validas:
         lancamentos = lancamentos.filter(categoria=categoria)
 
+    conta_selecionada = ''
+
+    if conta_id:
+        conta_valida = contas.filter(pk=conta_id).first()
+
+        if conta_valida:
+            lancamentos = lancamentos.filter(conta=conta_valida)
+            conta_selecionada = str(conta_valida.pk)
+        else:
+            lancamentos = lancamentos.none()
+
+    return {
+        'lancamentos': lancamentos,
+        'contas': contas,
+        'data_inicio': request.GET.get('data_inicio', ''),
+        'data_fim': request.GET.get('data_fim', ''),
+        'tipo_selecionado': tipo,
+        'categoria_selecionada': categoria,
+        'conta_selecionada': conta_selecionada,
+    }
+
+
+@login_required
+def consultas(request):
+    filtros = _obter_lancamentos_filtrados(request)
+    lancamentos = filtros['lancamentos']
+
     totais = lancamentos.aggregate(
         receitas=Sum('valor', filter=Q(tipo='R')),
         despesas=Sum('valor', filter=Q(tipo='D'))
@@ -482,13 +539,10 @@ def consultas(request):
     despesas = totais['despesas'] or Decimal('0.00')
 
     contexto = {
-        'lancamentos': lancamentos.order_by(
+        **filtros,
+        'lancamentos': lancamentos.select_related('conta').order_by(
             '-data_lancamento', '-id'
         ),
-        'data_inicio': request.GET.get('data_inicio', ''),
-        'data_fim': request.GET.get('data_fim', ''),
-        'tipo_selecionado': tipo,
-        'categoria_selecionada': categoria,
         'categorias': Lancamento.CATEGORIA_CHOICES,
         'receitas': receitas,
         'despesas': despesas,
@@ -504,36 +558,8 @@ def consultas(request):
 
 @login_required
 def exportar_consultas_csv(request):
-    lancamentos = Lancamento.objects.filter(
-        conta__usuario=request.user,
-        conta__grupo__isnull=True
-    )
-
-    data_inicio = parse_date(request.GET.get('data_inicio', ''))
-    data_fim = parse_date(request.GET.get('data_fim', ''))
-
-    tipo = request.GET.get('tipo', '')
-    categoria = request.GET.get('categoria', '')
-
-    if data_inicio:
-        lancamentos = lancamentos.filter(
-            data_lancamento__gte=data_inicio
-        )
-
-    if data_fim:
-        lancamentos = lancamentos.filter(
-            data_lancamento__lte=data_fim
-        )
-
-    if tipo in ['R', 'D']:
-        lancamentos = lancamentos.filter(tipo=tipo)
-
-    categorias_validas = [
-        escolha[0] for escolha in Lancamento.CATEGORIA_CHOICES
-    ]
-
-    if categoria in categorias_validas:
-        lancamentos = lancamentos.filter(categoria=categoria)
+    filtros = _obter_lancamentos_filtrados(request)
+    lancamentos = filtros['lancamentos'].select_related('conta')
 
     totais = lancamentos.aggregate(
         receitas=Sum('valor', filter=Q(tipo='R')),
@@ -561,6 +587,7 @@ def exportar_consultas_csv(request):
     escritor.writerow([
         'ID',
         'Data',
+        'Conta',
         'Tipo',
         'Categoria',
         'Valor'
@@ -572,6 +599,7 @@ def exportar_consultas_csv(request):
         escritor.writerow([
             lancamento.id,
             lancamento.data_lancamento.strftime('%d/%m/%Y'),
+            lancamento.conta.nome,
             lancamento.get_tipo_display(),
             lancamento.categoria,
             formatar_valor(lancamento.valor)
