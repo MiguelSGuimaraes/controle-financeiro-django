@@ -7,11 +7,53 @@
 <form method="post" class="form">
     {% csrf_token %}
 
-    {{ form.as_p }}
-
     {% if form.errors %}
-        <p>Usuário ou senha incorretos.</p>
+        <p class="erro-login">
+            Usuário ou senha incorretos. Verifique seus dados e tente novamente.
+        </p>
     {% endif %}
+
+    <div class="campo-form">
+        <label for="{{ form.username.id_for_label }}">Usuário:</label>
+        {{ form.username }}
+
+        {% for erro in form.username.errors %}
+            <small class="erro-login">{{ erro }}</small>
+        {% endfor %}
+    </div>
+
+    <div class="campo-form">
+        <label for="{{ form.password.id_for_label }}">Senha:</label>
+
+        <div class="campo-senha">
+            {{ form.password }}
+
+            <button
+                type="button"
+                id="alternarSenha"
+                class="botao-olho"
+                aria-label="Mostrar senha"
+                title="Mostrar senha"
+            >
+                <svg id="iconeOlho" xmlns="http://www.w3.org/2000/svg"
+                     width="21" height="21" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </button>
+        </div>
+
+        {% for erro in form.password.errors %}
+            <small class="erro-login">{{ erro }}</small>
+        {% endfor %}
+    </div>
+
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
 
     <div class="acoes-form">
         <button type="submit" class="btn btn-primary">
@@ -19,4 +61,86 @@
         </button>
     </div>
 </form>
+
+<style>
+    .campo-form {
+        margin-bottom: 20px;
+    }
+
+    .campo-form label {
+        display: block;
+        margin-bottom: 7px;
+        font-weight: 600;
+    }
+
+    .campo-senha {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .campo-senha input {
+        width: 100%;
+        padding-right: 48px;
+        box-sizing: border-box;
+    }
+
+    .botao-olho {
+        position: absolute;
+        right: 12px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+    }
+
+    .botao-olho:hover {
+        color: #111827;
+    }
+
+    .erro-login {
+        display: block;
+        color: #dc2626;
+        margin: 8px 0;
+    }
+</style>
+
+<script>
+    const botaoOlho = document.getElementById('alternarSenha');
+    const campoSenha = document.getElementById('id_password');
+
+    botaoOlho.addEventListener('click', function () {
+        const senhaVisivel = campoSenha.type === 'text';
+
+        campoSenha.type = senhaVisivel ? 'password' : 'text';
+
+        botaoOlho.setAttribute(
+            'aria-label',
+            senhaVisivel ? 'Mostrar senha' : 'Ocultar senha'
+        );
+
+        botaoOlho.setAttribute(
+            'title',
+            senhaVisivel ? 'Mostrar senha' : 'Ocultar senha'
+        );
+
+        if (senhaVisivel) {
+            document.getElementById('iconeOlho').innerHTML = `
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                <circle cx="12" cy="12" r="3"/>
+            `;
+        } else {
+            document.getElementById('iconeOlho').innerHTML = `
+                <path d="M3 3l18 18"/>
+                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/>
+                <path d="M9.9 5.2A11 11 0 0 1 12 5c6.5 0 10 7 10 7a15 15 0 0 1-4 4.5"/>
+                <path d="M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.2 0 2.3-.2 3.3-.6"/>
+            `;
+        }
+    });
+</script>
 {% endblock %}

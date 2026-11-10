@@ -3,8 +3,192 @@
 
 {% block conteudo %}
 
+<style>
+    /* Indicadores do dashboard */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+        margin: 28px 0 32px;
+    }
+
+    .card-indicador {
+        background: #1C2340;
+        border: 1px solid #303858;
+        border-radius: 12px;
+        padding: 22px 24px;
+        color: #F1F2FA;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card-indicador:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-indicador h3 {
+        color: #A4ABC5;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 14px;
+    }
+
+    .card-indicador p {
+        font-size: 25px;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .valor-destaque {
+        color: #A5B4FC;
+    }
+
+    .valor-receita {
+        color: #4ADE80;
+    }
+
+    .valor-despesa {
+        color: #F87171;
+    }
+
+    /* Seções */
+    .dashboard-section {
+        margin-bottom: 32px;
+    }
+
+    .dashboard-section h2 {
+        color: #F1F2FA;
+        margin-bottom: 18px;
+    }
+
+    /* Card do gráfico */
+    .card-grafico {
+        background: #1C2340;
+        border: 1px solid #303858;
+        border-radius: 12px;
+        padding: 24px;
+        height: 340px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Últimos lançamentos */
+    .ultimos-container {
+        background: #1C2340;
+        border: 1px solid #303858;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    .ultimos-scroll {
+        overflow-x: auto;
+    }
+
+    .ultimos-tabela {
+        width: 100%;
+        min-width: 650px;
+        border-collapse: collapse;
+        color: #F1F2FA;
+    }
+
+    .ultimos-tabela th {
+        background: #252E4D;
+        color: #D5D9EB;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: left;
+        padding: 16px 18px;
+        border-bottom: 1px solid #303858;
+    }
+
+    .ultimos-tabela td {
+        padding: 16px 18px;
+        border-bottom: 1px solid #303858;
+        font-size: 14px;
+        color: #E2E5F2;
+    }
+
+    .ultimos-tabela tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .ultimos-tabela tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .ultimos-tabela tbody tr:hover {
+        background: #252E4D;
+    }
+
+    .ultimos-tabela .valor {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* Badges */
+    .ultimos-tabela .badge {
+        display: inline-block;
+        padding: 5px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .ultimos-tabela .badge-receita {
+        background: #173F35;
+        color: #4ADE80;
+    }
+
+    .ultimos-tabela .badge-despesa {
+        background: #482832;
+        color: #F87171;
+    }
+
+    .ultimos-tabela .badge-guardado {
+        background: #29345C;
+        color: #A5B4FC;
+    }
+
+    .ultimos-tabela .vazio {
+        text-align: center;
+        color: #A4ABC5;
+        padding: 35px 15px;
+    }
+
+    /* Responsividade */
+    @media (max-width: 1000px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 600px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .card-indicador {
+            padding: 18px 20px;
+        }
+
+        .card-indicador p {
+            font-size: 23px;
+        }
+
+        .card-grafico {
+            padding: 14px;
+            height: 280px;
+        }
+    }
+</style>
+
 <div class="page-header">
     <h2>Dashboard Financeiro</h2>
+
     <a href="{% url 'criar_lancamento' %}" class="btn btn-primary">
         + Novo Lançamento
     </a>
@@ -53,35 +237,70 @@
 <div class="dashboard-section">
     <h2>Últimos Lançamentos</h2>
 
-    <table class="tabela">
-        <tr>
-            <th>Descrição</th>
-            <th>Categoria</th>
-            <th>Tipo</th>
-            <th>Valor</th>
-            <th>Data</th>
-        </tr>
+    <div class="ultimos-container">
+        <div class="ultimos-scroll">
 
-        {% for lancamento in ultimos_lancamentos %}
-        <tr>
-            <td>{{ lancamento.descricao }}</td>
-            <td>{{ lancamento.get_categoria_display }}</td>
-            <td>
-                <span class="badge {% if lancamento.tipo == 'R' %}badge-receita{% else %}badge-despesa{% endif %}">
-                    {{ lancamento.get_tipo_display }}
-                </span>
-            </td>
-            <td>R$ {{ lancamento.valor|floatformat:2 }}</td>
-            <td>{{ lancamento.data_lancamento|date:"d/m/Y" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="vazio">
-                Nenhum lançamento cadastrado.
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+            <table class="ultimos-tabela">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for lancamento in ultimos_lancamentos %}
+                    <tr>
+                        <td>{{ lancamento.descricao }}</td>
+
+                        <td>{{ lancamento.get_categoria_display }}</td>
+
+                        <td>
+                            <span class="badge
+                                {% if lancamento.tipo == 'R' %}
+                                    badge-receita
+                                {% elif lancamento.tipo == 'D' %}
+                                    badge-despesa
+                                {% elif lancamento.tipo == 'G' %}
+                                    badge-guardado
+                                {% endif %}
+                            ">
+                                {{ lancamento.get_tipo_display }}
+                            </span>
+                        </td>
+
+                        <td class="valor
+                            {% if lancamento.tipo == 'R' %}
+                                valor-receita
+                            {% elif lancamento.tipo == 'D' %}
+                                valor-despesa
+                            {% else %}
+                                valor-destaque
+                            {% endif %}
+                        ">
+                            R$ {{ lancamento.valor|floatformat:2 }}
+                        </td>
+
+                        <td>
+                            {{ lancamento.data_lancamento|date:"d/m/Y" }}
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="vazio">
+                            Nenhum lançamento cadastrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
 </div>
 
 {{ grafico_labels|json_script:"grafico-labels" }}
@@ -113,13 +332,13 @@
                 {
                     label: 'Receitas',
                     data: receitas,
-                    backgroundColor: '#16a34a',
+                    backgroundColor: '#22C55E',
                     borderRadius: 6
                 },
                 {
                     label: 'Despesas',
                     data: despesas,
-                    backgroundColor: '#dc2626',
+                    backgroundColor: '#EF4444',
                     borderRadius: 6
                 }
             ]
@@ -129,12 +348,29 @@
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'top'
+                    position: 'top',
+                    labels: {
+                        color: '#D5D9EB'
+                    }
                 }
             },
             scales: {
+                x: {
+                    ticks: {
+                        color: '#A4ABC5'
+                    },
+                    grid: {
+                        color: 'rgba(164, 171, 197, 0.08)'
+                    }
+                },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#A4ABC5'
+                    },
+                    grid: {
+                        color: 'rgba(164, 171, 197, 0.12)'
+                    }
                 }
             }
         }

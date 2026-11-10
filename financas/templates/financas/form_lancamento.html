@@ -1,14 +1,138 @@
+
 {% extends 'financas/base.html' %}
 
 {% block conteudo %}
-<h2>{% if form.instance.pk %}Editar{% else %}Novo{% endif %} Lançamento</h2>
 
-<form method="post" class="form">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <div class="acoes-form">
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <a href="{% url 'lista_lancamentos' %}" class="btn btn-secondary">Cancelar</a>
-  </div>
-</form>
+<style>
+    .lancamento-form-card {
+        max-width: 760px;
+        margin: 24px auto;
+        padding: 28px;
+        background: #1C2340;
+        border: 1px solid #303858;
+        border-radius: 14px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.16);
+    }
+
+    .lancamento-form-card h2 {
+        color: #F1F2FA;
+        margin: 0 0 8px;
+    }
+
+    .form-descricao {
+        color: #A4ABC5;
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+
+    .lancamento-form-card .form p {
+        margin-bottom: 19px;
+    }
+
+    .lancamento-form-card label {
+        display: block;
+        color: #D5D9EB;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .lancamento-form-card input:not([type="checkbox"]),
+    .lancamento-form-card select,
+    .lancamento-form-card textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px 13px;
+        background: #11182F;
+        color: #F1F2FA;
+        border: 1px solid #3A4568;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .lancamento-form-card input:focus,
+    .lancamento-form-card select:focus,
+    .lancamento-form-card textarea:focus {
+        border-color: #8175F0;
+        box-shadow: 0 0 0 3px rgba(129, 117, 240, 0.15);
+    }
+
+    .lancamento-form-card select option {
+        background: #11182F;
+        color: #F1F2FA;
+    }
+
+    .lancamento-form-card input[type="checkbox"] {
+        accent-color: #7669E8;
+        margin-right: 7px;
+    }
+
+    .lancamento-form-card .helptext {
+        display: block;
+        color: #A4ABC5;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .lancamento-form-card .errorlist {
+        color: #F87171;
+        font-size: 13px;
+        padding-left: 18px;
+        margin: 6px 0;
+    }
+
+    .lancamento-form-card .acoes-form {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 600px) {
+        .lancamento-form-card {
+            padding: 20px;
+            margin: 15px auto;
+        }
+
+        .lancamento-form-card .acoes-form {
+            flex-direction: column;
+        }
+
+        .lancamento-form-card .acoes-form .btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="lancamento-form-card">
+
+    <h2>
+        {% if form.instance.pk %}Editar{% else %}Novo{% endif %} Lançamento
+    </h2>
+
+    <p class="form-descricao">
+        Preencha as informações para registrar sua movimentação financeira.
+    </p>
+
+    <form method="post" class="form">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <div class="acoes-form">
+            <button type="submit" class="btn btn-primary">
+                Salvar Lançamento
+            </button>
+
+            <a href="{% url 'lista_lancamentos' %}" class="btn btn-secondary">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
 {% endblock %}

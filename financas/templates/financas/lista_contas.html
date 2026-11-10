@@ -2,39 +2,163 @@
 {% extends 'financas/base.html' %}
 
 {% block conteudo %}
+
+<style>
+    .contas-pagina {
+        margin-top: 24px;
+    }
+
+    .contas-tabela {
+        width: 100%;
+        background: #1C2340;
+        border: 1px solid #303858;
+        border-radius: 12px;
+        overflow: hidden;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: #F1F2FA;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    .contas-tabela th {
+        background: #252E4D;
+        color: #D5D9EB;
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid #303858;
+    }
+
+    .contas-tabela td {
+        padding: 16px;
+        color: #E2E5F2;
+        border-bottom: 1px solid #303858;
+    }
+
+    .contas-tabela tr:last-child td {
+        border-bottom: none;
+    }
+
+    .contas-tabela tr:hover td {
+        background: #252E4D;
+    }
+
+    .status-conta {
+        display: inline-block;
+        padding: 5px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-ativa {
+        background: #173F35;
+        color: #4ADE80;
+    }
+
+    .status-inativa {
+        background: #482832;
+        color: #F87171;
+    }
+
+    .contas-tabela .acoes {
+        display: flex;
+        gap: 16px;
+    }
+
+    .contas-tabela .acoes a {
+        color: #A5B4FC;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s ease;
+    }
+
+    .contas-tabela .acoes a:hover {
+        color: #FFFFFF;
+    }
+
+    .contas-tabela .acoes .link-excluir {
+        color: #F87171;
+    }
+
+    .contas-tabela .acoes .link-excluir:hover {
+        color: #FCA5A5;
+    }
+
+    .contas-tabela .vazio {
+        color: #A4ABC5;
+        text-align: center;
+        padding: 28px;
+    }
+
+    @media (max-width: 700px) {
+        .contas-tabela th,
+        .contas-tabela td {
+            padding: 12px 9px;
+            font-size: 13px;
+        }
+
+        .contas-tabela .acoes {
+            gap: 10px;
+        }
+    }
+</style>
+
 <div class="page-header">
     <h2>Minhas Contas</h2>
-    <a href="{% url 'criar_conta' %}" class="btn btn-primary">+ Nova Conta</a>
+
+    <a href="{% url 'criar_conta' %}" class="btn btn-primary">
+        + Nova Conta
+    </a>
 </div>
 
-<table class="tabela">
-    <tr>
-        <th>Nome</th>
-        <th>Tipo</th>
-        <th>Saldo Inicial</th>
-        <th>Status</th>
-        <th>Ações</th>
-    </tr>
+<div class="contas-pagina">
 
-    {% for conta in contas %}
-    <tr>
-        <td>{{ conta.nome }}</td>
-        <td>{{ conta.get_tipo_display }}</td>
-        <td>R$ {{ conta.saldo_inicial }}</td>
-        <td>
-            {% if conta.ativa %}Ativa{% else %}Inativa{% endif %}
-        </td>
-        <td class="acoes">
-            <a href="{% url 'editar_conta' conta.pk %}">Editar</a>
-            <a href="{% url 'excluir_conta' conta.pk %}" class="link-excluir">Excluir</a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="5" class="vazio">
-            Nenhuma conta cadastrada ainda.
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+    <table class="contas-tabela">
+        <tr>
+            <th>Nome</th>
+            <th>Tipo</th>
+            <th>Saldo Inicial</th>
+            <th>Status</th>
+            <th>Ações</th>
+        </tr>
+
+        {% for conta in contas %}
+        <tr>
+            <td>{{ conta.nome }}</td>
+
+            <td>{{ conta.get_tipo_display }}</td>
+
+            <td>R$ {{ conta.saldo_inicial|floatformat:2 }}</td>
+
+            <td>
+                {% if conta.ativa %}
+                    <span class="status-conta status-ativa">Ativa</span>
+                {% else %}
+                    <span class="status-conta status-inativa">Inativa</span>
+                {% endif %}
+            </td>
+
+            <td class="acoes">
+                <a href="{% url 'editar_conta' conta.pk %}">
+                    Editar
+                </a>
+
+                <a href="{% url 'excluir_conta' conta.pk %}"
+                   class="link-excluir">
+                    Excluir
+                </a>
+            </td>
+        </tr>
+
+        {% empty %}
+        <tr>
+            <td colspan="5" class="vazio">
+                Nenhuma conta cadastrada ainda.
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
 {% endblock %}

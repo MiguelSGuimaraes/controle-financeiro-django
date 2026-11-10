@@ -2,33 +2,133 @@
 {% extends 'financas/base.html' %}
 
 {% block conteudo %}
+
+<style>
+    .categorias-pagina {
+        margin-top: 24px;
+    }
+
+    .categorias-tabela {
+        width: 100%;
+        background: #1C2340;
+        border: 1px solid #303858;
+        border-radius: 12px;
+        overflow: hidden;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: #F1F2FA;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    .categorias-tabela th {
+        background: #252E4D;
+        color: #D5D9EB;
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid #303858;
+    }
+
+    .categorias-tabela td {
+        padding: 16px;
+        color: #E2E5F2;
+        border-bottom: 1px solid #303858;
+    }
+
+    .categorias-tabela tr:last-child td {
+        border-bottom: none;
+    }
+
+    .categorias-tabela tr:hover td {
+        background: #252E4D;
+    }
+
+    .categorias-tabela .acoes {
+        display: flex;
+        gap: 16px;
+    }
+
+    .categorias-tabela .acoes a {
+        color: #A5B4FC;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s ease;
+    }
+
+    .categorias-tabela .acoes a:hover {
+        color: #FFFFFF;
+    }
+
+    .categorias-tabela .acoes .link-excluir {
+        color: #F87171;
+    }
+
+    .categorias-tabela .acoes .link-excluir:hover {
+        color: #FCA5A5;
+    }
+
+    .categorias-tabela .vazio {
+        color: #A4ABC5;
+        text-align: center;
+        padding: 28px;
+    }
+
+    @media (max-width: 600px) {
+        .categorias-tabela th,
+        .categorias-tabela td {
+            padding: 12px 9px;
+            font-size: 13px;
+        }
+
+        .categorias-tabela .acoes {
+            gap: 10px;
+        }
+    }
+</style>
+
 <div class="page-header">
     <h2>Minhas Categorias</h2>
-    <a href="{% url 'criar_categoria' %}" class="btn btn-primary">+ Nova Categoria</a>
+
+    <a href="{% url 'criar_categoria' %}" class="btn btn-primary">
+        + Nova Categoria
+    </a>
 </div>
 
-<table class="tabela">
-    <tr>
-        <th>Nome</th>
-        <th>Tipo</th>
-        <th>Ações</th>
-    </tr>
+<div class="categorias-pagina">
 
-    {% for categoria in categorias %}
-    <tr>
-        <td>{{ categoria.nome }}</td>
-        <td>{{ categoria.get_tipo_display }}</td>
-        <td class="acoes">
-            <a href="{% url 'editar_categoria' categoria.pk %}">Editar</a>
-            <a href="{% url 'excluir_categoria' categoria.pk %}" class="link-excluir">Excluir</a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="3" class="vazio">
-            Nenhuma categoria cadastrada ainda.
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+    <table class="categorias-tabela">
+        <tr>
+            <th>Nome</th>
+            <th>Tipo</th>
+            <th>Ações</th>
+        </tr>
+
+        {% for categoria in categorias %}
+        <tr>
+            <td>{{ categoria.nome }}</td>
+
+            <td>{{ categoria.get_tipo_display }}</td>
+
+            <td class="acoes">
+                <a href="{% url 'editar_categoria' categoria.pk %}">
+                    Editar
+                </a>
+
+                <a href="{% url 'excluir_categoria' categoria.pk %}"
+                   class="link-excluir">
+                    Excluir
+                </a>
+            </td>
+        </tr>
+
+        {% empty %}
+        <tr>
+            <td colspan="3" class="vazio">
+                Nenhuma categoria cadastrada ainda.
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
 {% endblock %}

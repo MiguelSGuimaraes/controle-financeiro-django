@@ -2,15 +2,137 @@
 {% extends 'financas/base.html' %}
 
 {% block conteudo %}
-<h2>{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Categoria</h2>
 
-<form method="post" class="form">
-    {% csrf_token %}
-    {{ form.as_p }}
+<style>
+    .categoria-form-container {
+        max-width: 650px;
+        margin: 28px auto;
+    }
 
-    <div class="acoes-form">
-        <button type="submit" class="btn btn-primary">Salvar</button>
-        <a href="{% url 'lista_categorias' %}" class="btn btn-secondary">Cancelar</a>
+    .categoria-form-card {
+        background: #1C2340;
+        border: 1px solid #303858;
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .categoria-form-card h2 {
+        color: #F1F2FA;
+        margin: 0 0 26px;
+        font-size: 22px;
+    }
+
+    .categoria-form-card form p {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        margin-bottom: 20px;
+    }
+
+    .categoria-form-card label {
+        color: #D5D9EB;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .categoria-form-card input,
+    .categoria-form-card select,
+    .categoria-form-card textarea {
+        width: 100%;
+        box-sizing: border-box;
+        background: #11182F;
+        color: #F1F2FA;
+        border: 1px solid #3A4568;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 14px;
+        color-scheme: dark;
+    }
+
+    .categoria-form-card input:focus,
+    .categoria-form-card select:focus,
+    .categoria-form-card textarea:focus {
+        outline: none;
+        border-color: #8175F0;
+        box-shadow: 0 0 0 3px rgba(129, 117, 240, 0.15);
+    }
+
+    .categoria-form-card select option {
+        background: #1C2340;
+        color: #F1F2FA;
+    }
+
+    .categoria-form-card .helptext {
+        color: #A4ABC5;
+        font-size: 12px;
+    }
+
+    .categoria-form-card .errorlist {
+        color: #F87171;
+        font-size: 13px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .acoes-form {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid #303858;
+    }
+
+    @media (max-width: 600px) {
+        .categoria-form-card {
+            padding: 20px;
+        }
+
+        .acoes-form {
+            flex-direction: column;
+        }
+
+        .acoes-form .btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="categoria-form-container">
+
+    <div class="categoria-form-card">
+
+        <h2>
+            {% if form.instance.pk %}
+                Editar Categoria
+            {% else %}
+                Nova Categoria
+            {% endif %}
+        </h2>
+
+        <form method="post" class="form">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <div class="acoes-form">
+
+                <button type="submit" class="btn btn-primary">
+                    Salvar
+                </button>
+
+                <a href="{% url 'lista_categorias' %}"
+                   class="btn btn-secondary">
+                    Cancelar
+                </a>
+
+            </div>
+        </form>
+
     </div>
-</form>
+
+</div>
+
 {% endblock %}

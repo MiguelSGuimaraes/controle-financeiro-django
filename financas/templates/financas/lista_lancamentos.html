@@ -1,124 +1,362 @@
+
 {% extends 'financas/base.html' %}
 
 {% block conteudo %}
 
+<style>
+    .resumo {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+        margin: 28px 0 32px;
+    }
+
+    .resumo-card {
+        padding: 22px 24px;
+        border: 1px solid #303858;
+        border-radius: 12px;
+        background: #1C2340;
+        color: #F1F2FA;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .resumo-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    .resumo-topo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .resumo-label {
+        color: #D5D9EB;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .resumo-icone {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+        font-weight: 600;
+    }
+
+    .resumo-valor {
+        font-size: 27px;
+        font-weight: 700;
+        letter-spacing: -0.8px;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+    }
+
+    .resumo-descricao {
+        color: #A4ABC5;
+        font-size: 12px;
+    }
+
+    .card-receita {
+        border-top: 3px solid #22C55E;
+    }
+
+    .card-receita .resumo-icone {
+        background: #173F35;
+        color: #4ADE80;
+    }
+
+    .card-receita .resumo-valor {
+        color: #4ADE80;
+    }
+
+    .card-despesa {
+        border-top: 3px solid #EF4444;
+    }
+
+    .card-despesa .resumo-icone {
+        background: #482832;
+        color: #F87171;
+    }
+
+    .card-despesa .resumo-valor {
+        color: #F87171;
+    }
+
+    .card-saldo {
+        border-top: 3px solid #818CF8;
+    }
+
+    .card-saldo .resumo-icone {
+        background: #29345C;
+        color: #A5B4FC;
+    }
+
+    .card-saldo .resumo-valor {
+        color: #A5B4FC;
+    }
+
+    .card-saldo.saldo-negativo {
+        border-top-color: #EF4444;
+    }
+
+    .card-saldo.saldo-negativo .resumo-icone {
+        background: #482832;
+        color: #F87171;
+    }
+
+    .card-saldo.saldo-negativo .resumo-valor {
+        color: #F87171;
+    }
+
+    .lancamentos-container {
+        background: #1C2340;
+        border: 1px solid #303858;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 18px;
+    }
+
+    .lancamentos-scroll {
+        overflow-x: auto;
+    }
+
+    .lancamentos-tabela {
+        width: 100%;
+        min-width: 750px;
+        border-collapse: collapse;
+        color: #F1F2FA;
+    }
+
+    .lancamentos-tabela th {
+        background: #252E4D;
+        color: #D5D9EB;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: left;
+        padding: 16px;
+        border-bottom: 1px solid #303858;
+    }
+
+    .lancamentos-tabela td {
+        padding: 15px 16px;
+        border-bottom: 1px solid #303858;
+        font-size: 14px;
+        color: #E2E5F2;
+    }
+
+    .lancamentos-tabela tr:last-child td {
+        border-bottom: none;
+    }
+
+    .lancamentos-tabela tbody tr:hover {
+        background: #252E4D;
+    }
+
+    .lancamentos-tabela .valor {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-receita {
+        background: #173F35;
+        color: #4ADE80;
+    }
+
+    .badge-despesa {
+        background: #482832;
+        color: #F87171;
+    }
+
+    .badge-guardado {
+        background: #29345C;
+        color: #A5B4FC;
+    }
+
+    .lancamentos-tabela .acoes {
+        white-space: nowrap;
+    }
+
+    .lancamentos-tabela .acoes a {
+        color: #A5B4FC;
+        text-decoration: none;
+        margin-right: 10px;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .lancamentos-tabela .acoes a:hover {
+        color: #FFFFFF;
+        text-decoration: underline;
+    }
+
+    .lancamentos-tabela .acoes a.link-excluir {
+        color: #F87171;
+        margin-right: 0;
+    }
+
+    .lancamentos-tabela .vazio {
+        text-align: center;
+        color: #A4ABC5;
+        padding: 35px 15px;
+    }
+
+    @media (max-width: 700px) {
+        .resumo {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .resumo-card {
+            padding: 18px 20px;
+        }
+
+        .resumo-valor {
+            font-size: 24px;
+        }
+
+        .page-header {
+            gap: 12px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+    }
+</style>
+
 <div class="resumo">
 
-    <div class="resumo-card">
-        <span class="resumo-label">Receitas</span>
-        <span class="resumo-valor resumo-receita">
+    <div class="resumo-card card-receita">
+        <div class="resumo-topo">
+            <span class="resumo-label">Receitas</span>
+            <span class="resumo-icone">↗</span>
+        </div>
+
+        <span class="resumo-valor">
             R$ {{ total_receitas|floatformat:2 }}
         </span>
-    </div>
 
-    <div class="resumo-card">
-        <span class="resumo-label">Despesas</span>
-        <span class="resumo-valor resumo-despesa">
-            R$ {{ total_despesas|floatformat:2 }}
+        <span class="resumo-descricao">
+            Total de entradas registradas
         </span>
     </div>
 
-    <div class="resumo-card">
-        <span class="resumo-label">Saldo</span>
-        <span class="resumo-valor {% if saldo >= 0 %}resumo-receita{% else %}resumo-despesa{% endif %}">
+    <div class="resumo-card card-despesa">
+        <div class="resumo-topo">
+            <span class="resumo-label">Despesas</span>
+            <span class="resumo-icone">↘</span>
+        </div>
+
+        <span class="resumo-valor">
+            R$ {{ total_despesas|floatformat:2 }}
+        </span>
+
+        <span class="resumo-descricao">
+            Total de saídas registradas
+        </span>
+    </div>
+
+    <div class="resumo-card card-saldo {% if saldo < 0 %}saldo-negativo{% endif %}">
+        <div class="resumo-topo">
+            <span class="resumo-label">Saldo</span>
+            <span class="resumo-icone">R$</span>
+        </div>
+
+        <span class="resumo-valor">
             R$ {{ saldo|floatformat:2 }}
+        </span>
+
+        <span class="resumo-descricao">
+            Resultado financeiro
         </span>
     </div>
 
 </div>
 
-
 <div class="page-header">
-
     <h2>Meus Lançamentos</h2>
 
     <a href="{% url 'criar_lancamento' %}" class="btn btn-primary">
         + Novo Lançamento
     </a>
-
 </div>
 
+<div class="lancamentos-container">
+    <div class="lancamentos-scroll">
+        <table class="lancamentos-tabela">
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
 
-<table class="tabela">
+            <tbody>
+                {% for lancamento in lancamentos %}
+                <tr>
+                    <td>{{ lancamento.descricao }}</td>
+                    <td>{{ lancamento.categoria }}</td>
 
-    <tr>
-        <th>Descrição</th>
-        <th>Categoria</th>
-        <th>Tipo</th>
-        <th>Valor</th>
-        <th>Data</th>
-        <th>Ações</th>
-    </tr>
+                    <td>
+                        <span class="badge
+                            {% if lancamento.tipo == 'R' %}
+                                badge-receita
+                            {% elif lancamento.tipo == 'D' %}
+                                badge-despesa
+                            {% elif lancamento.tipo == 'G' %}
+                                badge-guardado
+                            {% endif %}
+                        ">
+                            {{ lancamento.get_tipo_display }}
+                        </span>
+                    </td>
 
-    {% for lancamento in lancamentos %}
+                    <td class="valor">
+                        R$ {{ lancamento.valor|floatformat:2 }}
+                    </td>
 
-    <tr>
+                    <td>
+                        {{ lancamento.data_lancamento|date:"d/m/Y" }}
+                    </td>
 
-        <td>
-            {{ lancamento.descricao }}
-        </td>
+                    <td class="acoes">
+                        <a href="{% url 'detalhe_lancamento' lancamento.pk %}">Ver</a>
+                        <a href="{% url 'editar_lancamento' lancamento.pk %}">Editar</a>
+                        <a href="{% url 'excluir_lancamento' lancamento.pk %}" class="link-excluir">Excluir</a>
+                    </td>
+                </tr>
 
-        <td>
-            {{ lancamento.categoria }}
-        </td>
-
-        <td>
-
-            <span class="badge
-                {% if lancamento.tipo == 'R' %}
-                    badge-receita
-                {% elif lancamento.tipo == 'D' %}
-                    badge-despesa
-                {% elif lancamento.tipo == 'G' %}
-                    badge-guardado
-                {% endif %}
-            ">
-
-                {{ lancamento.get_tipo_display }}
-
-            </span>
-
-        </td>
-
-        <td>
-            R$ {{ lancamento.valor|floatformat:2 }}
-        </td>
-
-        <td>
-            {{ lancamento.data_lancamento|date:"d/m/Y" }}
-        </td>
-
-        <td class="acoes">
-
-            <a href="{% url 'detalhe_lancamento' lancamento.pk %}">
-                Ver
-            </a>
-
-            <a href="{% url 'editar_lancamento' lancamento.pk %}">
-                Editar
-            </a>
-
-            <a href="{% url 'excluir_lancamento' lancamento.pk %}"
-               class="link-excluir">
-                Excluir
-            </a>
-
-        </td>
-
-    </tr>
-
-    {% empty %}
-
-    <tr>
-
-        <td colspan="6" class="vazio">
-            Nenhum lançamento cadastrado ainda.
-        </td>
-
-    </tr>
-
-    {% endfor %}
-
-</table>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="vazio">
+                        Nenhum lançamento cadastrado ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}

@@ -1,3 +1,6 @@
+
+import csv
+
 from django.utils.dateparse import parse_date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -6,6 +9,7 @@ from django.db.models import Sum, Q
 from django.db.models.functions import TruncMonth
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
+from django.http import HttpResponse
 from decimal import Decimal
 
 from .models import Lancamento, Conta, Categoria
@@ -19,10 +23,29 @@ def lista_lancamentos(request):
         conta__grupo__isnull=True
     )
 
+    totais = lancamentos.aggregate(
+        receitas=Sum('valor', filter=Q(tipo='R')),
+        despesas=Sum('valor', filter=Q(tipo='D'))
+    )
+
+    total_receitas = totais['receitas'] or Decimal('0.00')
+    total_despesas = totais['despesas'] or Decimal('0.00')
+
+    saldo = total_receitas - total_despesas
+
+    contexto = {
+        'lancamentos': lancamentos.order_by(
+            '-data_lancamento', '-id'
+        ),
+        'total_receitas': total_receitas,
+        'total_despesas': total_despesas,
+        'saldo': saldo,
+    }
+
     return render(
         request,
         'financas/lista_lancamentos.html',
-        {'lancamentos': lancamentos}
+        contexto
     )
 
 
@@ -477,3 +500,87 @@ def consultas(request):
         'financas/consultas.html',
         contexto
     )
+
+
+@login_required
+def exportar_consultas_csv(request):
+    lancamentos = Lancamento.objects.filter(
+        conta__usuario=request.user,
+        conta__grupo__isnull=True
+    )
+
+    data_inicio = parse_date(request.GET.get('data_inicio', ''))
+    data_fim = parse_date(request.GET.get('data_fim', ''))
+
+    tipo = request.GET.get('tipo', '')
+    categoria = request.GET.get('categoria', '')
+
+    if data_inicio:
+        lancamentos = lancamentos.filter(
+            data_lancamento__gte=data_inicio
+        )
+
+    if data_fim:
+        lancamentos = lancamentos.filter(
+            data_lancamento__lte=data_fim
+        )
+
+    if tipo in ['R', 'D']:
+        lancamentos = lancamentos.filter(tipo=tipo)
+
+    categorias_validas = [
+        escolha[0] for escolha in Lancamento.CATEGORIA_CHOICES
+    ]
+
+    if categoria in categorias_validas:
+        lancamentos = lancamentos.filter(categoria=categoria)
+
+    totais = lancamentos.aggregate(
+        receitas=Sum('valor', filter=Q(tipo='R')),
+        despesas=Sum('valor', filter=Q(tipo='D'))
+    )
+
+    receitas = totais['receitas'] or Decimal('0.00')
+    despesas = totais['despesas'] or Decimal('0.00')
+
+    resposta = HttpResponse(
+        content_type='text/csv; charset=utf-8'
+    )
+
+    resposta['Content-Disposition'] = (
+        'attachment; filename="relatorio_financeiro.csv"'
+    )
+
+    resposta.write('\ufeff')
+
+    escritor = csv.writer(resposta, delimiter=';')
+
+    def formatar_valor(valor):
+        return f'{valor:.2f}'.replace('.', ',')
+
+    escritor.writerow([
+        'ID',
+        'Data',
+        'Tipo',
+        'Categoria',
+        'Valor'
+    ])
+
+    for lancamento in lancamentos.order_by(
+        '-data_lancamento', '-id'
+    ):
+        escritor.writerow([
+            lancamento.id,
+            lancamento.data_lancamento.strftime('%d/%m/%Y'),
+            lancamento.get_tipo_display(),
+            lancamento.categoria,
+            formatar_valor(lancamento.valor)
+        ])
+
+    escritor.writerow([])
+    escritor.writerow(['RESUMO FINANCEIRO'])
+    escritor.writerow(['Total de receitas', formatar_valor(receitas)])
+    escritor.writerow(['Total de despesas', formatar_valor(despesas)])
+    escritor.writerow(['Resultado', formatar_valor(receitas - despesas)])
+
+    return resposta

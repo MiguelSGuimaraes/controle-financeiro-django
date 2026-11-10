@@ -1,5 +1,6 @@
 
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -13,6 +14,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'financas/style.css' %}">
+
+    <style>
+        .menu-principal a {
+            position: relative;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .menu-principal a:hover {
+            color: #111827;
+        }
+
+        .menu-principal a.menu-ativo {
+            color: #111827;
+            font-weight: 700;
+        }
+
+        .menu-principal a.menu-ativo::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -17px;
+            height: 3px;
+            background-color: #111827;
+            border-radius: 3px 3px 0 0;
+        }
+
+        @media (max-width: 700px) {
+            .menu-principal a.menu-ativo::after {
+                bottom: -5px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -29,24 +64,48 @@
             {% if user.is_authenticated %}
 
                 <nav class="menu-principal">
-                    <a href="{% url 'dashboard' %}">Dashboard</a>
-                    <a href="{% url 'lista_lancamentos' %}">Lançamentos</a>
-                    <a href="{% url 'lista_contas' %}">Contas</a>
-                    <a href="{% url 'lista_categorias' %}">Categorias</a>
-                    <a href="{% url 'consultas' %}">Consultas</a>
+
+                    <a href="{% url 'dashboard' %}"
+                       class="{% if request.resolver_match.url_name == 'dashboard' %}menu-ativo{% endif %}">
+                        Dashboard
+                    </a>
+
+                    <a href="{% url 'lista_lancamentos' %}"
+                       class="{% if request.resolver_match.url_name in 'lista_lancamentos criar_lancamento editar_lancamento detalhe_lancamento excluir_lancamento' %}menu-ativo{% endif %}">
+                        Lançamentos
+                    </a>
+
+                    <a href="{% url 'lista_contas' %}"
+                       class="{% if request.resolver_match.url_name == 'lista_contas' %}menu-ativo{% endif %}">
+                        Contas
+                    </a>
+
+                    <a href="{% url 'lista_categorias' %}"
+                       class="{% if request.resolver_match.url_name == 'lista_categorias' %}menu-ativo{% endif %}">
+                        Categorias
+                    </a>
+
+                    <a href="{% url 'consultas' %}"
+                       class="{% if request.resolver_match.url_name == 'consultas' %}menu-ativo{% endif %}">
+                        Consultas
+                    </a>
+
                 </nav>
 
                 <div class="usuario-logado">
+
                     <span class="nome-usuario">
                         {{ user.username }}
                     </span>
 
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
+
                         <button type="submit" class="btn-sair">
                             Sair
                         </button>
                     </form>
+
                 </div>
 
             {% endif %}
