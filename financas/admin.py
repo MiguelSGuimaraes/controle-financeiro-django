@@ -1,11 +1,16 @@
 from django.contrib import admin
-from .models import Lancamento
+from .models import (
+    PerfilFinanceiro,
+    GrupoFinanceiro,
+    MembroGrupo,
+    Conta,
+    Categoria,
+    Lancamento
+)
 
-
-@admin.register(Lancamento)
-class LancamentoAdmin(admin.ModelAdmin):
-    list_display = ('descricao', 'categoria', 'tipo', 'valor', 'data_lancamento', 'recorrente')
-    list_filter = ('tipo', 'categoria', 'recorrente')
-    search_fields = ('descricao',)
-
-# Register your models here.
+admin.site.register(PerfilFinanceiro)
+admin.site.register(GrupoFinanceiro)
+admin.site.register(MembroGrupo)
+admin.site.register(Conta)
+admin.site.register(Categoria)
+admin.site.register(Lancamento)

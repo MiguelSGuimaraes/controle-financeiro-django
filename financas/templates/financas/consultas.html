@@ -1,0 +1,112 @@
+
+{% extends 'financas/base.html' %}
+
+{% block conteudo %}
+
+<div class="page-header">
+    <h2>Consultas Financeiras</h2>
+</div>
+
+<form method="get" class="form filtros-form">
+
+    <div>
+        <label for="data_inicio">Data inicial</label>
+        <input
+            type="date"
+            id="data_inicio"
+            name="data_inicio"
+            value="{{ data_inicio }}"
+        >
+    </div>
+
+    <div>
+        <label for="data_fim">Data final</label>
+        <input
+            type="date"
+            id="data_fim"
+            name="data_fim"
+            value="{{ data_fim }}"
+        >
+    </div>
+
+    <div>
+        <label for="tipo">Tipo</label>
+        <select name="tipo" id="tipo">
+            <option value="">Todos</option>
+            <option value="R" {% if tipo_selecionado == 'R' %}selected{% endif %}>Receita</option>
+            <option value="D" {% if tipo_selecionado == 'D' %}selected{% endif %}>Despesa</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="categoria">Categoria</label>
+        <select name="categoria" id="categoria">
+            <option value="">Todas</option>
+            {% for codigo, nome in categorias %}
+                <option value="{{ codigo }}" {% if categoria_selecionada == codigo %}selected{% endif %}>
+                    {{ nome }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Filtrar
+    </button>
+
+    <a href="{% url 'consultas' %}" class="btn btn-secondary">
+        Limpar
+    </a>
+
+</form>
+
+<div class="dashboard-grid">
+
+    <div class="card-indicador">
+        <h3>Receitas</h3>
+        <p class="valor-receita">R$ {{ receitas|floatformat:2 }}</p>
+    </div>
+
+    <div class="card-indicador">
+        <h3>Despesas</h3>
+        <p class="valor-despesa">R$ {{ despesas|floatformat:2 }}</p>
+    </div>
+
+    <div class="card-indicador">
+        <h3>Resultado</h3>
+        <p class="valor-destaque">R$ {{ resultado|floatformat:2 }}</p>
+    </div>
+
+</div>
+
+<div class="dashboard-section">
+    <h2>Resultado da Consulta</h2>
+
+    <table class="tabela">
+        <tr>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Data</th>
+        </tr>
+
+        {% for lancamento in lancamentos %}
+        <tr>
+            <td>{{ lancamento.descricao }}</td>
+            <td>{{ lancamento.get_categoria_display }}</td>
+            <td>{{ lancamento.get_tipo_display }}</td>
+            <td>R$ {{ lancamento.valor|floatformat:2 }}</td>
+            <td>{{ lancamento.data_lancamento|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="vazio">
+                Nenhum lançamento encontrado com esses filtros.
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

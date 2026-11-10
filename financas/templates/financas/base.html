@@ -1,23 +1,63 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Controle Financeiro</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="{% static 'financas/style.css' %}">
 </head>
+
 <body>
     <div class="container">
+
         <header class="app-header">
-            <h1><a href="{% url 'lista_lancamentos' %}">Controle Financeiro</a></h1>
+
+            <div class="marca">
+                <a href="{% url 'dashboard' %}" class="logo">
+                    Controle Financeiro
+                </a>
+            </div>
+
+            {% if user.is_authenticated %}
+
+                <nav class="menu-principal">
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'lista_lancamentos' %}">Lançamentos</a>
+                    <a href="{% url 'lista_contas' %}">Contas</a>
+                    <a href="{% url 'lista_categorias' %}">Categorias</a>
+                    <a href="{% url 'consultas' %}">Consultas</a>
+                </nav>
+
+                <div class="usuario-logado">
+                    <span class="nome-usuario">
+                        {{ user.username }}
+                    </span>
+
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-sair">
+                            Sair
+                        </button>
+                    </form>
+                </div>
+
+            {% endif %}
+
         </header>
 
-        {% block conteudo %}
-        {% endblock %}
+        <main>
+            {% block conteudo %}
+            {% endblock %}
+        </main>
+
     </div>
 </body>
 </html>

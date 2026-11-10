@@ -1,0 +1,22 @@
+
+{% extends 'financas/base.html' %}
+
+{% block conteudo %}
+<h2>Entrar no Sistema</h2>
+
+<form method="post" class="form">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    {% if form.errors %}
+        <p>Usuário ou senha incorretos.</p>
+    {% endif %}
+
+    <div class="acoes-form">
+        <button type="submit" class="btn btn-primary">
+            Entrar
+        </button>
+    </div>
+</form>
+{% endblock %}
